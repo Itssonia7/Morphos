@@ -41,11 +41,11 @@ export default function NotFoundPage({
           404
         </h1>
 
-        <div className="text-xl sm:text-2xl font-mono uppercase tracking-[0.25em] text-[#FF7A00] font-bold mb-4">
+        <div className="text-xl sm:text-2xl font-mono uppercase tracking-[0.25em] text-[#FF6A3D] font-bold mb-4">
           SIGNAL LOST
         </div>
 
-        <p className="text-sm sm:text-base text-[#8A8A8A] max-w-md mx-auto leading-relaxed mb-10">
+        <p className="text-sm sm:text-base text-[#A3A3A3] max-w-md mx-auto leading-relaxed mb-10">
           The investigation you&rsquo;re looking for doesn&rsquo;t exist, was deleted from Firestore, or has expired beyond the platform telemetry horizon.
         </p>
 
@@ -53,13 +53,13 @@ export default function NotFoundPage({
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <button
             onClick={onNavigateHome}
-            className="btn-secondary py-3 px-8 text-xs font-mono uppercase tracking-wider font-semibold w-full sm:w-auto"
+            className="btn-pill-secondary py-3 px-8 text-xs font-mono uppercase tracking-wider font-semibold w-full sm:w-auto"
           >
             ← Return Home
           </button>
           <button
             onClick={onOpenWorkspace}
-            className="btn-primary py-3 px-8 text-xs font-mono uppercase tracking-wider font-bold shadow-[0_0_25px_rgba(255,122,0,0.25)] w-full sm:w-auto"
+            className="btn-pill-primary py-3 px-8 text-xs font-mono uppercase tracking-wider font-bold w-full sm:w-auto"
           >
             Open Workspace →
           </button>

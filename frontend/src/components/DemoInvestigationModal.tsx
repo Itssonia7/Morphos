@@ -95,19 +95,19 @@ export default function DemoInvestigationModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="demo-modal-title"
-            className="relative w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.9)] z-10 space-y-6"
+            className="relative w-full max-w-2xl glass-panel bg-[#0A0A0A]/95 border border-white/15 rounded-3xl p-6 sm:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.95)] z-10 space-y-6 backdrop-blur-xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF7A00] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FF6A3D] animate-pulse shadow-[0_0_8px_#FF6A3D]" />
                 <span id="demo-modal-title" className="font-display font-bold text-xs tracking-[0.2em] uppercase text-white">
                   MORPHOS AUTONOMOUS DEMO WALKTHROUGH
                 </span>
               </div>
               <button
                 onClick={onClose}
-                className="text-[#8A8A8A] hover:text-white"
+                className="text-[#8A8A8A] hover:text-white rounded-full w-7 h-7 flex items-center justify-center bg-white/[0.04] hover:bg-white/[0.1] transition-colors"
               >
                 ✕
               </button>
@@ -120,7 +120,7 @@ export default function DemoInvestigationModal({
                   key={i}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     i === step
-                      ? 'w-10 bg-[#FF7A00] shadow-[0_0_8px_#FF7A00]'
+                      ? 'w-10 bg-[#FF6A3D] shadow-[0_0_10px_#FF6A3D]'
                       : i < step
                       ? 'w-4 bg-white/40'
                       : 'w-4 bg-white/10'
@@ -138,7 +138,7 @@ export default function DemoInvestigationModal({
               className="space-y-4 p-5 rounded-2xl bg-black/60 border border-white/[0.08]"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-[#FF9D3D] font-bold">
+                <span className="text-xs font-mono text-[#FF9A4D] font-bold">
                   {demoSteps[step].title}
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.05] text-[#8A8A8A]">
@@ -161,14 +161,14 @@ export default function DemoInvestigationModal({
                 <button
                   disabled={step === 0}
                   onClick={() => setStep((s) => Math.max(0, s - 1))}
-                  className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-[#8A8A8A] hover:text-white disabled:opacity-30"
+                  className="px-4 py-1.5 rounded-full border border-white/10 text-xs text-[#8A8A8A] hover:text-white disabled:opacity-30 transition-colors"
                 >
                   ← Prev
                 </button>
                 <button
                   disabled={step === demoSteps.length - 1}
                   onClick={() => setStep((s) => Math.min(demoSteps.length - 1, s + 1))}
-                  className="px-3 py-1.5 rounded-lg border border-white/10 text-xs text-[#8A8A8A] hover:text-white disabled:opacity-30"
+                  className="px-4 py-1.5 rounded-full border border-white/10 text-xs text-[#8A8A8A] hover:text-white disabled:opacity-30 transition-colors"
                 >
                   Next →
                 </button>
@@ -177,7 +177,7 @@ export default function DemoInvestigationModal({
               <div className="flex items-center gap-3">
                 <button
                   onClick={onClose}
-                  className="btn-secondary py-2.5 px-4 text-xs uppercase"
+                  className="btn-pill-secondary py-2.5 px-5 text-xs uppercase tracking-wider"
                 >
                   Close
                 </button>
@@ -186,7 +186,7 @@ export default function DemoInvestigationModal({
                     onClose();
                     onOpenWorkspaceWithDemo();
                   }}
-                  className="btn-primary py-2.5 px-6 text-xs uppercase font-bold"
+                  className="btn-pill-coral py-2.5 px-6 text-xs uppercase font-bold tracking-wider"
                 >
                   Open in Live Workspace →
                 </button>

@@ -13,4 +13,17 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 4173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-firebase': ['firebase/app', 'firebase/auth'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 });
+

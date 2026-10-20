@@ -36,8 +36,10 @@ export default function Navbar({
           onClick={() => onNavigate('landing')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-[#FF7A00]/40 flex items-center justify-center font-display font-bold text-white text-base tracking-wider group-hover:border-[#FF7A00] group-hover:shadow-[0_0_15px_rgba(255,122,0,0.35)] transition-all">
-            M
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1E110A] to-[#0D0805] border border-[#FF6A3D]/40 flex items-center justify-center font-display font-bold text-white text-base tracking-wider group-hover:border-[#FF6A3D] group-hover:shadow-[0_0_22px_rgba(255,106,61,0.45)] transition-all">
+            <span className="bg-gradient-to-r from-[#FF6A3D] via-white to-[#FF9A4D] bg-clip-text text-transparent">
+              M
+            </span>
           </div>
           <span className="font-display font-bold text-lg tracking-[0.25em] text-[#F5F5F5] group-hover:text-white transition-colors">
             MORPHOS
@@ -51,32 +53,32 @@ export default function Navbar({
               <a
                 key={item.id}
                 href={item.href}
-                className="relative text-xs tracking-widest uppercase font-medium text-[#8A8A8A] hover:text-[#F5F5F5] transition-colors py-1 group"
+                className="relative text-xs tracking-widest uppercase font-medium text-[#A3A3A3] hover:text-white transition-colors py-1 group"
               >
                 {item.label}
                 {item.id === 'home' && (
-                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#FF7A00] rounded-full shadow-[0_0_8px_rgba(255,122,0,0.6)]" />
+                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#FF6A3D] to-[#FF9A4D] rounded-full shadow-[0_0_8px_rgba(255,106,61,0.6)]" />
                 )}
                 {item.id !== 'home' && (
-                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#FF7A00] rounded-full transition-all duration-300 group-hover:w-full group-hover:shadow-[0_0_8px_rgba(255,122,0,0.6)]" />
+                  <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-gradient-to-r from-[#FF6A3D] to-[#FF9A4D] rounded-full transition-all duration-300 group-hover:w-full group-hover:shadow-[0_0_8px_rgba(255,106,61,0.6)]" />
                 )}
               </a>
             ))}
           </nav>
         ) : (
-          <div className="hidden md:flex items-center gap-3 text-xs tracking-wider text-[#8A8A8A]">
-            <span className="inline-block w-2 h-2 rounded-full bg-[#FF7A00] animate-pulse" />
-            <span className="text-[#F5F5F5] font-semibold">INVESTIGATION WORKSPACE</span>
+          <div className="hidden md:flex items-center gap-3 text-xs tracking-wider text-[#A3A3A3]">
+            <span className="inline-block w-2 h-2 rounded-full bg-[#FF6A3D] animate-pulse" />
+            <span className="text-white font-semibold">INVESTIGATION WORKSPACE</span>
           </div>
         )}
 
         {/* Right CTA / Auth */}
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => onNavigate('dashboard')}
-                className="text-xs uppercase tracking-wider font-semibold text-[#8A8A8A] hover:text-white transition-colors"
+                className="text-xs uppercase tracking-wider font-semibold text-[#A3A3A3] hover:text-white transition-colors"
               >
                 Dashboard
               </button>
@@ -87,17 +89,17 @@ export default function Navbar({
                 </div>
                 <button
                   onClick={onSignOut}
-                  className="text-xs text-[#8A8A8A] hover:text-[#FF7A00] transition-colors"
+                  className="text-xs text-[#A3A3A3] hover:text-rose-400 transition-colors"
                 >
                   Sign Out
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => onOpenAuth('login')}
-                className="text-xs tracking-wider uppercase font-semibold text-[#8A8A8A] hover:text-[#F5F5F5] transition-colors px-2 py-1"
+                className="text-xs tracking-wider uppercase font-semibold text-[#A3A3A3] hover:text-white transition-colors px-2 py-1"
               >
                 Sign In
               </button>
@@ -109,7 +111,7 @@ export default function Navbar({
                     onOpenAuth('register');
                   }
                 }}
-                className="btn-primary text-xs tracking-wider uppercase font-bold py-2.5 px-6 shadow-sm hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+                className="btn-pill-primary text-xs py-2 px-5"
               >
                 Get Started
               </button>
@@ -119,7 +121,7 @@ export default function Navbar({
           {!isDashboard && (
             <button
               onClick={() => onNavigate('dashboard')}
-              className="btn-secondary text-xs uppercase tracking-wider py-2.5 px-5"
+              className="btn-pill-secondary text-xs py-2 px-5 font-mono"
             >
               Launch App →
             </button>

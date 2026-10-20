@@ -33,8 +33,8 @@ export default function TermsPage({
         {/* Header HUD */}
         <div className="mb-12 border-b border-white/[0.08] pb-8">
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-2 h-2 rounded-full bg-[#FF7A00] animate-pulse" />
-            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#FF7A00]">
+            <span className="w-2 h-2 rounded-full bg-[#FF6A3D] animate-pulse" />
+            <span className="text-xs font-mono uppercase tracking-[0.2em] text-[#FF6A3D]">
               LEGAL TERMS OF SERVICE
             </span>
           </div>

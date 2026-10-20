@@ -83,13 +83,25 @@ function normalizeInvestigation(record: Record<string, unknown>): Record<string,
   };
 }
 
+const MAX_IN_MEMORY_INVESTIGATIONS = 1000;
+
+function setBoundedInMemoryInvestigation(id: string, payload: Record<string, unknown>) {
+  if (inMemoryInvestigations.size >= MAX_IN_MEMORY_INVESTIGATIONS && !inMemoryInvestigations.has(id)) {
+    const oldestKey = inMemoryInvestigations.keys().next().value;
+    if (oldestKey) {
+      inMemoryInvestigations.delete(oldestKey);
+    }
+  }
+  inMemoryInvestigations.set(id, payload);
+}
+
 export async function saveInvestigation(record: Record<string, unknown>) {
   const payload = normalizeInvestigation(record);
   const id = (record.id as string) || `inv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   payload.id = id;
 
   if (isTestEnvironment || !firebaseEnabled) {
-    inMemoryInvestigations.set(id, payload);
+    setBoundedInMemoryInvestigation(id, payload);
     return {
       stored: true,
       id,
@@ -111,7 +123,7 @@ export async function saveInvestigation(record: Record<string, unknown>) {
     };
   } catch (error) {
     console.warn('Firebase persistence unavailable; switching to local fallback.', error);
-    inMemoryInvestigations.set(id, payload);
+    setBoundedInMemoryInvestigation(id, payload);
     return {
       stored: true,
       id,

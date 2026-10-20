@@ -46,15 +46,15 @@ export default function FeatureSection() {
         {/* Header */}
         <div className="max-w-3xl mb-16 space-y-4">
           <div className="flex items-center gap-3">
-            <span className="w-5 h-[2px] bg-[#FF7A00]" />
-            <span className="eyebrow tracking-[0.2em] text-[#8A8A8A]">
+            <span className="w-5 h-[2px] bg-[#FF6A3D]" />
+            <span className="eyebrow tracking-[0.2em] text-[#A3A3A3]">
               ENGINEERED FOR PRODUCTION
             </span>
           </div>
           <h2 className="font-display font-extrabold text-3xl sm:text-5xl text-white tracking-tight">
             CORE PLATFORM CAPABILITIES
           </h2>
-          <p className="text-base sm:text-lg text-[#8A8A8A]">
+          <p className="text-base sm:text-lg text-[#A3A3A3]">
             Designed for software engineers, site reliability teams, and AI researchers who require empirical evidence over generic LLM conversation.
           </p>
         </div>
@@ -68,30 +68,30 @@ export default function FeatureSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.08 }}
-              className="group p-6 sm:p-8 rounded-2xl bg-white/[0.02] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300 relative flex flex-col justify-between"
+              className="group p-6 sm:p-8 rounded-2xl bg-[#080808] border border-white/[0.08] hover:border-[#FF6A3D]/40 hover:bg-[#0D0D0D] transition-all duration-300 relative flex flex-col justify-between shadow-sm"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-[#FF7A00] tracking-wider">
+                  <span className="font-mono text-xs font-bold text-[#FF6A3D] tracking-wider">
                     {feat.num}
                   </span>
-                  <span className="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded bg-white/[0.05] text-[#8A8A8A] border border-white/[0.06]">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2 py-0.5 rounded bg-white/[0.04] text-[#A3A3A3] border border-white/[0.06]">
                     {feat.badge}
                   </span>
                 </div>
 
-                <h3 className="font-display font-bold text-xl text-white group-hover:text-[#FF9D3D] transition-colors">
+                <h3 className="font-display font-bold text-xl text-white group-hover:text-[#FF9A4D] transition-colors">
                   {feat.title}
                 </h3>
 
-                <p className="text-sm text-[#8A8A8A] leading-relaxed">
+                <p className="text-sm text-[#A3A3A3] leading-relaxed">
                   {feat.desc}
                 </p>
               </div>
 
-              <div className="pt-6 mt-4 border-t border-white/[0.05] flex items-center justify-between text-xs text-[#555555] group-hover:text-[#8A8A8A] transition-colors">
+              <div className="pt-6 mt-4 border-t border-white/[0.05] flex items-center justify-between text-xs text-[#666666] group-hover:text-[#A3A3A3] transition-colors">
                 <span className="font-mono">STATUS: OPERATIONAL</span>
-                <span className="text-[#FF7A00] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[#FF6A3D] opacity-0 group-hover:opacity-100 transition-opacity font-mono text-[11px]">
                   Learn more →
                 </span>
               </div>

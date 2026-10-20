@@ -39,12 +39,12 @@ const loadingStages = [
 
 const statusColors: Record<string, string> = {
   idle: 'bg-slate-200 text-slate-900',
-  interpreted: 'bg-sky-500/15 text-sky-200 border border-sky-500/30',
-  hypotheses_ready: 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/20',
-  experiment_selected: 'bg-violet-500/15 text-violet-200 border border-violet-500/20',
+  interpreted: 'bg-[#FF6A3D]/15 text-orange-200 border border-[#FF6A3D]/30',
+  hypotheses_ready: 'bg-[#FF9A4D]/15 text-orange-100 border border-[#FF9A4D]/20',
+  experiment_selected: 'bg-amber-500/15 text-amber-200 border border-amber-500/20',
   experiment_running: 'bg-amber-500/15 text-amber-100 border border-amber-500/20',
   analyzed: 'bg-emerald-500/15 text-emerald-100 border border-emerald-500/20',
-  finalized: 'bg-fuchsia-500/15 text-fuchsia-100 border border-fuchsia-500/20',
+  finalized: 'bg-[#FF6A3D]/15 text-orange-100 border border-[#FF6A3D]/20',
   confidence_high: 'bg-emerald-500/15 text-emerald-100 border border-emerald-500/20',
   confidence_low: 'bg-orange-500/15 text-orange-100 border border-orange-500/20',
   failed: 'bg-rose-500/15 text-rose-200 border border-rose-500/20',
@@ -972,7 +972,7 @@ export default function Dashboard() {
             <div className="chart-title">Confidence distribution</div>
             <div className="ring-stack">
               <div className="ring-ring ring-sky" style={{ opacity: 0.4 + analytics.confidenceDistribution.high / Math.max(1, history.length) }} />
-              <div className="ring-ring ring-violet" style={{ opacity: 0.4 + analytics.confidenceDistribution.medium / Math.max(1, history.length) }} />
+              <div className="ring-ring ring-teal" style={{ opacity: 0.4 + analytics.confidenceDistribution.medium / Math.max(1, history.length) }} />
               <div className="ring-ring ring-emerald" style={{ opacity: 0.4 + analytics.confidenceDistribution.low / Math.max(1, history.length) }} />
             </div>
           </div>
@@ -1151,7 +1151,7 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ label, value, tone }: { label: string; value: string; tone: 'sky' | 'violet' | 'emerald' | 'amber'; }) {
+function MetricCard({ label, value, tone }: { label: string; value: string; tone: 'sky' | 'teal' | 'emerald' | 'amber'; }) {
   return (
     <div className={`metric-card ${tone}`}>
       <div className="metric-label">{label}</div>

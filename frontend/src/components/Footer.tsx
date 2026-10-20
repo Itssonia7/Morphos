@@ -6,34 +6,36 @@ export default function Footer({ onNavigate }: { onNavigate: (view: string) => v
           {/* Brand Column */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-[#FF7A00]/40 flex items-center justify-center font-display font-bold text-white text-sm">
-                M
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1E2235] to-[#0D0F17] border border-white/10 flex items-center justify-center font-display font-bold text-white text-sm shadow-[0_0_15px_rgba(255,106,61,0.2)]">
+                <span className="bg-gradient-to-r from-[#FF6A3D] to-[#FF9A4D] bg-clip-text text-transparent">
+                  M
+                </span>
               </div>
               <span className="font-display font-bold text-lg tracking-[0.25em] text-[#F5F5F5]">
                 MORPHOS
               </span>
             </div>
-            <p className="text-[#8A8A8A] max-w-sm text-xs leading-relaxed">
+            <p className="text-[#A3A3A3] max-w-sm text-xs leading-relaxed">
               Autonomous AI Experimentation Platform. An AI system that learns by experimenting.
               Turn your questions into structured investigations.
             </p>
             <div className="flex items-center gap-2 pt-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-mono text-[#8A8A8A]">SYSTEM STATUS: ALL SYSTEMS NOMINAL</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-mono text-[#A3A3A3]">SYSTEM STATUS: ALL SYSTEMS NOMINAL</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="md:col-span-2 space-y-3">
-            <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#555555] font-semibold">
+            <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#666666] font-semibold">
               NAVIGATION
             </div>
-            <ul className="space-y-2 text-[#8A8A8A]">
+            <ul className="space-y-2 text-[#A3A3A3]">
               <li><a href="#hero" className="hover:text-white transition-colors">Home</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
               <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
               <li>
-                <button onClick={() => onNavigate('dashboard')} className="hover:text-[#FF7A00] transition-colors">
+                <button onClick={() => onNavigate('dashboard')} className="hover:text-[#FF6A3D] transition-colors">
                   Dashboard
                 </button>
               </li>

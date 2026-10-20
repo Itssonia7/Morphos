@@ -104,21 +104,21 @@ return {
   ];
 
   return (
-    <section id="how-it-works" className="py-24 sm:py-32 bg-[#0A0A0A] relative border-b border-white/[0.06]">
+    <section id="how-it-works" className="py-24 sm:py-32 bg-[#080808] relative border-b border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-2">
-            <span className="w-4 h-[2px] bg-[#FF7A00]" />
-            <span className="eyebrow tracking-[0.2em] text-[#8A8A8A]">
+            <span className="w-4 h-[2px] bg-[#FF6A3D]" />
+            <span className="eyebrow tracking-[0.2em] text-[#A3A3A3]">
               AUTONOMOUS REASONING LOOP
             </span>
-            <span className="w-4 h-[2px] bg-[#FF7A00]" />
+            <span className="w-4 h-[2px] bg-[#FF6A3D]" />
           </div>
           <h2 className="font-display font-extrabold text-3xl sm:text-5xl text-white tracking-tight">
             HOW MORPHOS THINKS
           </h2>
-          <p className="text-base sm:text-lg text-[#8A8A8A]">
+          <p className="text-base sm:text-lg text-[#A3A3A3]">
             Unlike simple chat bots, MORPHOS runs a stateful LangGraph state machine designed to form hypotheses, test them with real tools, and measure confidence mathematically.
           </p>
         </div>
@@ -133,19 +133,19 @@ return {
                 onClick={() => setSelectedStage(idx)}
                 className={`text-left p-3.5 rounded-xl border transition-all duration-200 relative ${
                   isSelected
-                    ? 'bg-[#FF7A00]/10 border-[#FF7A00] shadow-[0_0_20px_rgba(255,122,0,0.22)]'
+                    ? 'bg-[#FF6A3D]/12 border-[#FF6A3D] shadow-[0_0_20px_rgba(255,106,61,0.25)]'
                     : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20 hover:bg-white/[0.04]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className={`text-[11px] font-mono font-bold ${isSelected ? 'text-[#FF7A00]' : 'text-[#8A8A8A]'}`}>
+                  <span className={`text-[11px] font-mono font-bold ${isSelected ? 'text-[#FF6A3D]' : 'text-[#A3A3A3]'}`}>
                     {st.step}
                   </span>
                   {isSelected && (
-                    <span className="w-2 h-2 rounded-full bg-[#FF7A00] shadow-[0_0_8px_#FF7A00]" />
+                    <span className="w-2 h-2 rounded-full bg-[#FF6A3D] shadow-[0_0_8px_#FF6A3D]" />
                   )}
                 </div>
-                <div className={`text-xs font-bold uppercase tracking-wider line-clamp-1 ${isSelected ? 'text-white' : 'text-[#8A8A8A]'}`}>
+                <div className={`text-xs font-bold uppercase tracking-wider line-clamp-1 ${isSelected ? 'text-white' : 'text-[#A3A3A3]'}`}>
                   {st.short}
                 </div>
               </button>
@@ -165,10 +165,10 @@ return {
             {/* Left Column: Stage Explanation */}
             <div className="lg:col-span-6 space-y-4">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-[#FF7A00]/20 text-[#FF7A00] border border-[#FF7A00]/30">
+                <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-[#FF6A3D]/20 text-[#FF6A3D] border border-[#FF6A3D]/30">
                   STEP {stages[selectedStage].step}
                 </span>
-                <span className="text-xs font-mono text-[#8A8A8A]">
+                <span className="text-xs font-mono text-[#A3A3A3]">
                   node: {stages[selectedStage].node}
                 </span>
               </div>
