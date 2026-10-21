@@ -115,6 +115,12 @@ export default function SecondSection({ onExploreFeatures, onViewGitHub }: Secon
                   height={400}
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.src.endsWith('.webp')) {
+                      img.src = '/ai-chip.jpg';
+                    }
+                  }}
                 />
               </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-40 pointer-events-none" />

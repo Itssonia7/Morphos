@@ -8,6 +8,7 @@ interface HeroProps {
 
 export default function Hero({ onStartInvestigating, onWatchDemo }: HeroProps) {
   const [activeStage, setActiveStage] = useState(3);
+  const [imgSrc, setImgSrc] = useState('/glossy-ribbon.webp');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -140,14 +141,22 @@ export default function Hero({ onStartInvestigating, onWatchDemo }: HeroProps) {
             {/* 3D Ribbon Container with Floating Micro-motion */}
             <div className="relative z-10 w-full max-w-[460px] aspect-square flex items-center justify-center ribbon-floating">
               <picture className="w-full h-full">
+                <source srcSet="/glossy-ribbon.webp" type="image/webp" />
                 <img
-                  src="/glossy-ribbon.jpg"
+                  src={imgSrc}
                   alt="Glossy 3D Multicolored Ribbon — MORPHOS AI Architecture"
                   width={500}
                   height={500}
                   className="w-full h-full object-cover rounded-3xl drop-shadow-[0_25px_50px_rgba(0,0,0,0.95)]"
                   loading="eager"
                   fetchPriority="high"
+                  onError={() => {
+                    if (imgSrc === '/glossy-ribbon.webp') {
+                      setImgSrc('/glossy-ribbon.jpg');
+                    } else if (imgSrc === '/glossy-ribbon.jpg') {
+                      setImgSrc('/robot-hero.webp');
+                    }
+                  }}
                 />
               </picture>
 
