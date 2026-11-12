@@ -1,15 +1,10 @@
-import { Router, type Request, type Response, type NextFunction } from 'express';
+import { Router } from 'express';
 import { z } from 'zod';
-import admin from 'firebase-admin';
-import type { DecodedIdToken } from 'firebase-admin/auth';
 import { runInvestigation } from '../agents/graph.js';
+import { requireAuth, type AuthenticatedRequest } from '../middleware/auth.js';
 import { deleteInvestigation, getAnalyticsForUser, getInvestigationById, getInvestigationsForUser, saveInvestigation } from '../services/firebase.js';
 
 const router = Router();
-
-interface AuthenticatedRequest extends Request {
-  user?: DecodedIdToken;
-}
 
 const investigateSchema = z.object({
   question: z
@@ -17,32 +12,9 @@ const investigateSchema = z.object({
     .trim()
     .min(8, 'Investigation question must be at least 8 characters long.')
     .max(1000, 'Investigation question cannot exceed 1000 characters.'),
+  projectId: z.string().trim().min(1).max(100).optional(),
+  topK: z.number().int().min(1).max(20).optional(),
 });
-
-async function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization ?? '';
-  const hasHeader = authHeader.length > 0;
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-
-  console.info('AUTH MIDDLEWARE: authorization header present:', hasHeader ? 'true' : 'false');
-
-  if (!token) {
-    console.warn('AUTH MIDDLEWARE: token verification: FAIL');
-    return res.status(401).json({ error: 'Authentication required.' });
-  }
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = decodedToken;
-    console.info('AUTH MIDDLEWARE: token verification: PASS');
-    console.info('AUTH MIDDLEWARE: decoded UID present:', decodedToken.uid ? 'true' : 'false');
-    return next();
-  } catch (error) {
-    const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : 'unknown';
-    console.warn('AUTH MIDDLEWARE: token verification: FAIL', { code });
-    return res.status(401).json({ error: 'Invalid or expired Firebase token.' });
-  }
-}
 
 router.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -127,16 +99,23 @@ router.post('/investigate', requireAuth, async (req: AuthenticatedRequest, res) 
       return res.status(401).json({ error: 'Authenticated UID is required.' });
     }
 
-    const investigation = await runInvestigation(parsed.question);
+    const investigation = await runInvestigation(parsed.question, {
+      userId: uid,
+      projectId: parsed.projectId,
+      ragTopK: parsed.topK,
+    });
     const investigationId = investigation.id || `inv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     const saved = await saveInvestigation({
       id: investigationId,
       userId: uid,
+      ...(parsed.projectId ? { projectId: parsed.projectId } : {}),
       question: parsed.question,
       domain: investigation.domain,
       interpretedProblem: investigation.interpretedProblem,
       interpretation: investigation.interpretedProblem,
+      retrievedContext: investigation.retrievedContext,
+      ragSummary: investigation.ragSummary,
       hypotheses: investigation.hypotheses,
       selectedHypothesis: investigation.selectedHypothesis,
       experiment: investigation.experiment,
