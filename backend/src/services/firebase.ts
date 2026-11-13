@@ -1,5 +1,6 @@
 import admin from 'firebase-admin';
 import { config } from '../config.js';
+import type { KnowledgeChunkRecord, KnowledgeDocumentRecord } from '../rag/types.js';
 
 let firebaseEnabled = false;
 const isTestEnvironment = process.env.NODE_ENV === 'test';
@@ -8,6 +9,8 @@ export let firebaseAdminConfigured = false;
 // In-memory persistence for local fallback when Firebase is not configured or during testing
 export const inMemoryInvestigations = new Map<string, Record<string, unknown>>();
 export const inMemoryFindings: Array<Record<string, unknown>> = [];
+export const inMemoryKnowledgeDocuments = new Map<string, KnowledgeDocumentRecord>();
+export const inMemoryKnowledgeChunks = new Map<string, KnowledgeChunkRecord>();
 
 function initializeFirebaseAdmin() {
   if (firebaseEnabled || isTestEnvironment) {
@@ -319,4 +322,249 @@ export async function getAnalyticsForUser(userId?: string) {
 
 export function isFirebaseAvailable() {
   return firebaseEnabled;
+}
+
+const MAX_IN_MEMORY_KNOWLEDGE_DOCS = 500;
+const MAX_IN_MEMORY_KNOWLEDGE_CHUNKS = 5000;
+
+function setBoundedKnowledgeDocument(id: string, record: KnowledgeDocumentRecord) {
+  if (inMemoryKnowledgeDocuments.size >= MAX_IN_MEMORY_KNOWLEDGE_DOCS && !inMemoryKnowledgeDocuments.has(id)) {
+    const oldestKey = inMemoryKnowledgeDocuments.keys().next().value;
+    if (oldestKey) {
+      inMemoryKnowledgeDocuments.delete(oldestKey);
+    }
+  }
+  inMemoryKnowledgeDocuments.set(id, record);
+}
+
+function setBoundedKnowledgeChunk(chunkId: string, record: KnowledgeChunkRecord) {
+  if (inMemoryKnowledgeChunks.size >= MAX_IN_MEMORY_KNOWLEDGE_CHUNKS && !inMemoryKnowledgeChunks.has(chunkId)) {
+    const oldestKey = inMemoryKnowledgeChunks.keys().next().value;
+    if (oldestKey) {
+      inMemoryKnowledgeChunks.delete(oldestKey);
+    }
+  }
+  inMemoryKnowledgeChunks.set(chunkId, record);
+}
+
+export async function saveKnowledgeDocumentWithChunks(
+  document: KnowledgeDocumentRecord,
+  chunks: KnowledgeChunkRecord[],
+): Promise<{ stored: boolean; mode: 'firebase' | 'dev-fallback'; documentId: string }> {
+  if (!document.userId) {
+    throw new Error('userId is required to persist knowledge documents.');
+  }
+
+  const cleanDoc = stripUndefined(document) as KnowledgeDocumentRecord;
+  const cleanChunks = chunks.map((chunk) => ({
+    ...chunk,
+    userId: document.userId,
+    projectId: document.projectId,
+    documentId: document.id,
+    ...(document.investigationId ? { investigationId: document.investigationId } : {}),
+    metadata: stripUndefined(chunk.metadata) as KnowledgeChunkRecord['metadata'],
+  }));
+
+  if (isTestEnvironment || !firebaseEnabled) {
+    setBoundedKnowledgeDocument(cleanDoc.id, cleanDoc);
+    for (const chunk of cleanChunks) {
+      setBoundedKnowledgeChunk(chunk.chunkId, chunk);
+    }
+    return { stored: true, mode: 'dev-fallback', documentId: cleanDoc.id };
+  }
+
+  try {
+    const db = admin.firestore();
+    const docRef = db.collection('knowledge_documents').doc(cleanDoc.id);
+    await docRef.set(cleanDoc);
+
+    // Firestore batch limit is 500 operations per batch
+    for (let i = 0; i < cleanChunks.length; i += 400) {
+      const batch = db.batch();
+      const slice = cleanChunks.slice(i, i + 400);
+      for (const chunk of slice) {
+        const chunkRef = db.collection('knowledge_chunks').doc(chunk.chunkId);
+        batch.set(chunkRef, chunk);
+      }
+      await batch.commit();
+    }
+
+    return { stored: true, mode: 'firebase', documentId: cleanDoc.id };
+  } catch (error) {
+    console.warn('Firestore knowledge persistence unavailable; switching to local fallback.', error);
+    setBoundedKnowledgeDocument(cleanDoc.id, cleanDoc);
+    for (const chunk of cleanChunks) {
+      setBoundedKnowledgeChunk(chunk.chunkId, chunk);
+    }
+    return { stored: true, mode: 'dev-fallback', documentId: cleanDoc.id };
+  }
+}
+
+export async function getKnowledgeDocumentsForUser(
+  userId?: string,
+  projectId?: string,
+): Promise<KnowledgeDocumentRecord[]> {
+  if (!userId) {
+    return [];
+  }
+
+  const filterInMemory = () =>
+    Array.from(inMemoryKnowledgeDocuments.values())
+      .filter((doc) => doc.userId === userId && (!projectId || doc.projectId === projectId))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  if (isTestEnvironment || !firebaseEnabled) {
+    return filterInMemory();
+  }
+
+  try {
+    const db = admin.firestore();
+    let query: admin.firestore.Query = db.collection('knowledge_documents').where('userId', '==', userId);
+    if (projectId) {
+      query = query.where('projectId', '==', projectId);
+    }
+    const snapshot = await query.get();
+    const docs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as KnowledgeDocumentRecord);
+    return docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    console.warn('Firestore knowledge document list unavailable; falling back to in-memory.', error);
+    return filterInMemory();
+  }
+}
+
+export async function getKnowledgeDocumentById(documentId: string): Promise<KnowledgeDocumentRecord | null> {
+  if (!documentId) return null;
+
+  if (isTestEnvironment || !firebaseEnabled) {
+    return inMemoryKnowledgeDocuments.get(documentId) ?? null;
+  }
+
+  try {
+    const db = admin.firestore();
+    const doc = await db.collection('knowledge_documents').doc(documentId).get();
+    return doc.exists
+      ? ({ id: doc.id, ...doc.data() } as KnowledgeDocumentRecord)
+      : inMemoryKnowledgeDocuments.get(documentId) ?? null;
+  } catch (error) {
+    console.warn('Firestore knowledge document lookup unavailable.', error);
+    return inMemoryKnowledgeDocuments.get(documentId) ?? null;
+  }
+}
+
+export async function getKnowledgeChunksForUser(
+  userId?: string,
+  options: { projectId?: string; investigationId?: string } = {},
+): Promise<KnowledgeChunkRecord[]> {
+  if (!userId) {
+    return [];
+  }
+
+  const matchesScope = (chunk: KnowledgeChunkRecord) => {
+    const chunkUserId = chunk.metadata?.userId ?? (chunk as unknown as { userId?: string }).userId;
+    if (chunkUserId !== userId) {
+      return false;
+    }
+    const chunkProjectId = chunk.metadata?.projectId ?? (chunk as unknown as { projectId?: string }).projectId;
+    if (options.projectId && chunkProjectId !== options.projectId) {
+      return false;
+    }
+    if (options.investigationId && chunk.metadata?.investigationId && chunk.metadata.investigationId !== options.investigationId) {
+      return false;
+    }
+    return true;
+  };
+
+  if (isTestEnvironment || !firebaseEnabled) {
+    return Array.from(inMemoryKnowledgeChunks.values()).filter(matchesScope);
+  }
+
+  try {
+    const db = admin.firestore();
+    let query: admin.firestore.Query = db.collection('knowledge_chunks').where('userId', '==', userId);
+    if (options.projectId) {
+      query = query.where('projectId', '==', options.projectId);
+    }
+    const snapshot = await query.get();
+    const chunks = snapshot.docs.map((doc) => doc.data() as KnowledgeChunkRecord);
+    if (chunks.length === 0) {
+      // Also include any in-memory fallback chunks written during transient Firestore outage
+      return Array.from(inMemoryKnowledgeChunks.values()).filter(matchesScope);
+    }
+    return chunks.filter(matchesScope);
+  } catch (error) {
+    console.warn('Firestore knowledge chunks query unavailable; falling back to in-memory.', error);
+    return Array.from(inMemoryKnowledgeChunks.values()).filter(matchesScope);
+  }
+}
+
+export async function deleteKnowledgeDocumentForUser(
+  documentId: string,
+  userId?: string,
+): Promise<'deleted' | 'not_found' | 'forbidden' | 'error'> {
+  if (!documentId || !userId) {
+    return 'forbidden';
+  }
+
+  if (isTestEnvironment || !firebaseEnabled) {
+    const existing = inMemoryKnowledgeDocuments.get(documentId);
+    if (!existing) {
+      return 'not_found';
+    }
+    if (existing.userId !== userId) {
+      return 'forbidden';
+    }
+    inMemoryKnowledgeDocuments.delete(documentId);
+    for (const [chunkId, chunk] of inMemoryKnowledgeChunks.entries()) {
+      if (chunk.metadata.documentId === documentId && chunk.metadata.userId === userId) {
+        inMemoryKnowledgeChunks.delete(chunkId);
+      }
+    }
+    return 'deleted';
+  }
+
+  try {
+    const db = admin.firestore();
+    const docRef = db.collection('knowledge_documents').doc(documentId);
+    const snapshot = await docRef.get();
+
+    if (!snapshot.exists) {
+      const memExisting = inMemoryKnowledgeDocuments.get(documentId);
+      if (!memExisting) return 'not_found';
+      if (memExisting.userId !== userId) return 'forbidden';
+      inMemoryKnowledgeDocuments.delete(documentId);
+      return 'deleted';
+    }
+
+    const record = snapshot.data() as KnowledgeDocumentRecord | undefined;
+    if (record?.userId !== userId) {
+      return 'forbidden';
+    }
+
+    const chunksSnapshot = await db
+      .collection('knowledge_chunks')
+      .where('userId', '==', userId)
+      .where('documentId', '==', documentId)
+      .get();
+
+    for (let i = 0; i < chunksSnapshot.docs.length; i += 400) {
+      const batch = db.batch();
+      for (const chunkDoc of chunksSnapshot.docs.slice(i, i + 400)) {
+        batch.delete(chunkDoc.ref);
+      }
+      await batch.commit();
+    }
+
+    await docRef.delete();
+    inMemoryKnowledgeDocuments.delete(documentId);
+    for (const [chunkId, chunk] of inMemoryKnowledgeChunks.entries()) {
+      if (chunk.metadata.documentId === documentId && chunk.metadata.userId === userId) {
+        inMemoryKnowledgeChunks.delete(chunkId);
+      }
+    }
+
+    return 'deleted';
+  } catch (error) {
+    console.warn('Failed to delete knowledge document from Firestore.', error);
+    return 'error';
+  }
 }

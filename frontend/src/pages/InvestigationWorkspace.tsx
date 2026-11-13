@@ -315,6 +315,41 @@ export default function InvestigationWorkspace({
             </ul>
           </section>
 
+          {/* 2b. RETRIEVED KNOWLEDGE BASE CONTEXT (RAG) */}
+          {Array.isArray(investigation.retrievedContext) && investigation.retrievedContext.length > 0 && (
+            <section className="p-6 rounded-2xl bg-[#0D0D12] border border-[#FF6A3D]/20 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2">
+                  <IconCpu className="w-4 h-4 text-[#FF9A4D]" />
+                  <h2 className="font-display font-bold text-sm text-white tracking-wide uppercase">
+                    Retrieved Knowledge Context (RAG)
+                  </h2>
+                </div>
+                <span className="text-[11px] font-mono text-[#FF9A4D]">
+                  {investigation.retrievedContext.length} CHUNK(S) GROUNDED
+                </span>
+              </div>
+
+              <div className="space-y-2.5 pt-1">
+                {investigation.retrievedContext.map((chunk) => (
+                  <div
+                    key={chunk.chunkId}
+                    className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
+                      <span className="text-[#FF9A4D] font-semibold">
+                        {chunk.sourceName}
+                        {chunk.metadata?.section ? ` · ${chunk.metadata.section}` : ''}
+                      </span>
+                      <span>Similarity: {(chunk.score * 100).toFixed(0)}%</span>
+                    </div>
+                    <p className="text-xs text-slate-200 leading-relaxed">{chunk.content}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* 3. WHAT WE TESTED / CANDIDATE HYPOTHESES */}
           <section className="p-6 rounded-2xl bg-[#0D0D12] border border-white/[0.07] space-y-4 shadow-sm">
             <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">

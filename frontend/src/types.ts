@@ -30,12 +30,36 @@ export type Experiment = {
   inputs?: Record<string, unknown>;
 };
 
+export type RetrievedChunk = {
+  chunkId: string;
+  documentId: string;
+  sourceName: string;
+  content: string;
+  score: number;
+  metadata?: {
+    projectId?: string;
+    section?: string;
+    page?: number;
+    chunkIndex?: number;
+  };
+};
+
+export type RagSummary = {
+  enabled: boolean;
+  retrievedCount: number;
+  sources: string[];
+  embeddingProvider?: string;
+  warning?: string;
+};
+
 export type InvestigationResponse = {
   id?: string;
   question: string;
   domain?: InvestigationDomain;
   resultStatus?: ResultStatus;
   interpretedProblem: string;
+  retrievedContext?: RetrievedChunk[];
+  ragSummary?: RagSummary;
   hypotheses: Hypothesis[];
   selectedHypothesis: Hypothesis | null;
   experiment: Experiment | null;
@@ -64,6 +88,8 @@ export type InvestigationRecord = Record<string, unknown> & {
   maxIterations?: number;
   finalConclusion?: string;
   interpretedProblem?: string;
+  retrievedContext?: RetrievedChunk[];
+  ragSummary?: RagSummary;
   analysis?: string;
   selectedHypothesis?: Hypothesis | null;
   hypotheses?: Hypothesis[];

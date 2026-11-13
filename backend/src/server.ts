@@ -5,6 +5,7 @@ import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import { pathToFileURL } from 'node:url';
 import investigationRouter from './routes/investigation.js';
+import knowledgeRouter from './routes/knowledge.js';
 import { config } from './config.js';
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/investigate', rateLimit({
 }));
 
 app.use('/api', investigationRouter);
+app.use('/api', knowledgeRouter);
 
 app.get('/', (_req: Request, res: Response) => {
   res.json({ name: 'MORPHOS API', status: 'online' });
