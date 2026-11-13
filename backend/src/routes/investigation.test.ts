@@ -62,6 +62,11 @@ vi.mock('../services/firebase.js', () => ({
   ],
   saveInvestigation: async (record: Record<string, unknown>) => ({ id: 'new-id', ...record }),
   deleteInvestigation: async (id: string, userId?: string) => id === 'owned-id' && userId === 'test-user-uid',
+  getKnowledgeChunksForUser: async () => [],
+  getKnowledgeDocumentsForUser: async () => [],
+  getKnowledgeDocumentById: async () => null,
+  saveKnowledgeDocumentWithChunks: async () => ({ stored: true, mode: 'dev-fallback', documentId: 'doc-1' }),
+  deleteKnowledgeDocumentForUser: async () => 'not_found',
   getAnalyticsForUser: async () => ({
     totalInvestigations: 1,
     completedInvestigations: 1,
