@@ -1,3 +1,4 @@
+import { subscribeToGraphUpdates } from './services/socket';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {

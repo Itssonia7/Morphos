@@ -1,3 +1,4 @@
+import { getStageIndexFromNode, subscribeToGraphUpdates } from '../services/socket';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import {
