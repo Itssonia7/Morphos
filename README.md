@@ -20,6 +20,34 @@ The platform is designed to help users investigate complex technical issues thro
 
 This makes the system more transparent than a typical chatbot because each stage is observable and stateful.
 
+## ⭐ Support & Contribute
+
+We welcome contributions to **Morphos**. To maintain an organized contribution workflow, please follow these steps:
+
+### Contribution Workflow
+
+1. **⭐ Star the repository**  
+   Before contributing, please star the [Morphos repository](https://github.com/tanmayyyyayyy/Morphos) to show your support and help increase its visibility.
+
+2. **🍴 Fork the repository**  
+   Fork the repository to your GitHub account so you can work on your own copy of the project.
+
+3. **🐛 Create an Issue**  
+   Before starting a contribution, create an issue describing the bug, feature, improvement, or idea you would like to work on. This helps us discuss and track the proposed change.
+
+4. **🔀 Submit a Pull Request**  
+   Once your changes are ready, create a Pull Request from your fork and reference the related issue.
+
+### Important
+
+**Please complete the following steps in order before contributing:**
+
+> ⭐ **Star → 🍴 Fork → 🐛 Issue → 🔀 Pull Request**
+
+This workflow helps us keep contributions organized, avoid duplicate work, and make project collaboration easier.
+
+Thank you for helping improve **Morphos**! 🚀
+
 ## Problem
 
 Modern technical investigations often involve ambiguity, incomplete information, and iterative hypothesis testing. Many AI tools produce vague answers without clearly showing how they reasoned or which experiments they considered. MORPHOS addresses that by formalizing the workflow as an evidence-driven investigation system.
