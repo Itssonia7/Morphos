@@ -1,12 +1,5 @@
-/**
- * File README
- * What this file does: wires the MORPHOS investigation as a real LangGraph state machine.
- * Why it exists: it turns the workflow into a controlled cycle with safe stopping conditions instead of a free-form chatbot loop.
- * Data in: a user question, initial state, and the intermediate outputs created by each node.
- * Data out: the final investigation state with a conclusion, confidence, and events list.
- * LangGraph connection: this file defines the graph edges, nodes, and conditional branching between generateHypotheses and finalize.
- */
 import { START, END, StateGraph, Annotation } from '@langchain/langgraph';
+import { emitGraphState } from '../services/socket.js';
 import { createFreshState, InvestigationDomain, InvestigationState, ResultStatus, WorkflowEvent } from './state.js';
 import { interpretQuestion } from './nodes/interpretQuestion.js';
 import { generateHypotheses } from './nodes/generateHypotheses.js';
@@ -28,8 +21,59 @@ export function shouldContinue(state: InvestigationState): string {
   return 'generate_hypotheses';
 }
 
-export async function runInvestigation(question: string, id?: string): Promise<InvestigationState> {
+function withTelemetry(
+  nodeName: string,
+  nodeFn: (state: InvestigationState) => Promise<InvestigationState> | InvestigationState,
+  userId?: string,
+) {
+  return async (state: InvestigationState): Promise<InvestigationState> => {
+    const nextState = await nodeFn(state);
+    const runId = nextState.id || state.id || 'unknown-run';
+    const latestEvent = nextState.events[nextState.events.length - 1];
+
+    emitGraphState(
+      runId,
+      nodeName,
+      {
+        runId,
+        stage: nodeName,
+        status: nextState.status,
+        domain: nextState.domain,
+        confidence: nextState.confidence,
+        iteration: nextState.iteration,
+        message: latestEvent?.message ?? `Completed stage: ${nodeName}`,
+        timestamp: latestEvent?.timestamp ?? new Date().toISOString(),
+      },
+      userId,
+    );
+
+    return nextState;
+  };
+}
+
+export async function runInvestigation(
+  question: string,
+  id?: string,
+  userId?: string,
+): Promise<InvestigationState> {
   const initialState = createFreshState(question, id);
+  const runId = initialState.id!;
+
+  emitGraphState(
+    runId,
+    'started',
+    {
+      runId,
+      stage: 'started',
+      status: initialState.status,
+      domain: initialState.domain,
+      confidence: initialState.confidence,
+      iteration: initialState.iteration,
+      message: 'Investigation started',
+      timestamp: new Date().toISOString(),
+    },
+    userId,
+  );
 
   const InvestigationAnnotation = Annotation.Root({
     id: Annotation<string>(),
@@ -59,13 +103,13 @@ export async function runInvestigation(question: string, id?: string): Promise<I
 
   const workflow: any = new StateGraph(InvestigationAnnotation);
 
-  workflow.addNode('interpretQuestion', interpretQuestion);
-  workflow.addNode('generateHypotheses', generateHypotheses);
-  workflow.addNode('selectExperiment', selectExperiment);
-  workflow.addNode('executeExperiment', async (state: InvestigationState) => executeExperiment(state));
-  workflow.addNode('analyzeResults', analyzeResults);
-  workflow.addNode('evaluateConfidence', evaluateConfidence);
-  workflow.addNode('finalize', finalize);
+  workflow.addNode('interpretQuestion', withTelemetry('interpretQuestion', interpretQuestion, userId));
+  workflow.addNode('generateHypotheses', withTelemetry('generateHypotheses', generateHypotheses, userId));
+  workflow.addNode('selectExperiment', withTelemetry('selectExperiment', selectExperiment, userId));
+  workflow.addNode('executeExperiment', withTelemetry('executeExperiment', executeExperiment, userId));
+  workflow.addNode('analyzeResults', withTelemetry('analyzeResults', analyzeResults, userId));
+  workflow.addNode('evaluateConfidence', withTelemetry('evaluateConfidence', evaluateConfidence, userId));
+  workflow.addNode('finalize', withTelemetry('finalize', finalize, userId));
 
   workflow.addEdge(START, 'interpretQuestion');
   workflow.addEdge('interpretQuestion', 'generateHypotheses');

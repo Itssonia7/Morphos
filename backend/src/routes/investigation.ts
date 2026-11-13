@@ -127,8 +127,8 @@ router.post('/investigate', requireAuth, async (req: AuthenticatedRequest, res) 
       return res.status(401).json({ error: 'Authenticated UID is required.' });
     }
 
-    const investigation = await runInvestigation(parsed.question);
-    const investigationId = investigation.id || `inv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const investigationId = `inv-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const investigation = await runInvestigation(parsed.question, investigationId, uid);
 
     const saved = await saveInvestigation({
       id: investigationId,
