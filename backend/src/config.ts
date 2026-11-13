@@ -13,6 +13,7 @@ export const config = {
   port: Number(process.env.PORT ?? 4000),
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5173'),
   geminiApiKey: process.env.GEMINI_API_KEY ?? '',
+  groqApiKey: process.env.GROQ_API_KEY ?? '',
   firebaseProjectId: process.env.FIREBASE_PROJECT_ID ?? '',
   firebaseApiKey: process.env.FIREBASE_API_KEY ?? '',
   firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL ?? '',
@@ -22,3 +23,4 @@ export const config = {
 };
 
 export const isGeminiConfigured = Boolean(config.geminiApiKey);
+export const isGroqConfigured = Boolean(config.groqApiKey);
