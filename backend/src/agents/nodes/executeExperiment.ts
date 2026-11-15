@@ -8,7 +8,10 @@
  */
 import { createEvent, InvestigationState } from '../state.js';
 import { benchmarkTool } from '../tools/benchmarkTool.js';
+import { calculatorTool } from '../tools/calculatorTool.js';
+import { logAnalyzerTool } from '../tools/logAnalyzerTool.js';
 import { mockDataTool } from '../tools/mockDataTool.js';
+import { networkTraceTool } from '../tools/networkTraceTool.js';
 
 export async function executeExperiment(state: InvestigationState): Promise<InvestigationState> {
   const experiment = state.experiment;
@@ -31,6 +34,25 @@ export async function executeExperiment(state: InvestigationState): Promise<Inve
     const raw = await benchmarkTool.invoke({
       datasetSize: args.datasetSize ?? 1000,
       loadFactor: args.loadFactor ?? 1,
+    });
+    result = JSON.parse(String(raw));
+  } else if (experiment.tool === 'network_trace') {
+    const args = experiment.inputs as { endpoint?: string };
+    const raw = await networkTraceTool.invoke({
+      endpoint: String(args.endpoint ?? '/api/v1/checkout'),
+    });
+    result = JSON.parse(String(raw));
+  } else if (experiment.tool === 'log_analyzer') {
+    const args = experiment.inputs as { query?: string; timeframe?: string };
+    const raw = await logAnalyzerTool.invoke({
+      query: String(args.query ?? state.question),
+      timeframe: String(args.timeframe ?? '15m'),
+    });
+    result = JSON.parse(String(raw));
+  } else if (experiment.tool === 'calculator_tool') {
+    const args = experiment.inputs as { expression?: string };
+    const raw = await calculatorTool.invoke({
+      expression: String(args.expression ?? '1 + 1'),
     });
     result = JSON.parse(String(raw));
   } else {

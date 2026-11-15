@@ -305,4 +305,34 @@ describe('PHASE 14 — Regression Test Suite', () => {
       expect(unauthorizedDelete.status).toBe(403);
     });
   });
+  // P: Deterministic Network & Log Analysis Tools
+  describe("P: Deterministic Network & Log Analysis Tools", () => {
+    it("selects and executes network_trace deterministically for endpoint latency investigations", async () => {
+      const q = "Why is API endpoint /api/v1/checkout experiencing high gateway latency?";
+      const res1 = await runInvestigation(q);
+      const res2 = await runInvestigation(q);
+
+      expect(res1.experiment?.tool).toBe("network_trace");
+      expect(res1.experimentResult).toMatchObject({
+        ok: true,
+        endpoint: "/api/v1/checkout",
+        bottleneckStage: "upstream_ttfb",
+      });
+      expect(res1.experimentResult).toEqual(res2.experimentResult);
+    });
+
+    it("selects and executes log_analyzer deterministically for server error log investigations", async () => {
+      const q = "Investigate 504 timeout error spike in server logs";
+      const res1 = await runInvestigation(q);
+      const res2 = await runInvestigation(q);
+
+      expect(res1.experiment?.tool).toBe("log_analyzer");
+      expect(res1.experimentResult).toMatchObject({
+        ok: true,
+        errorCode: "ERR_UPSTREAM_TIMEOUT",
+        severity: "HIGH",
+      });
+      expect(res1.experimentResult).toEqual(res2.experimentResult);
+    });
+  });
 });

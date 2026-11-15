@@ -1,37 +1,10 @@
-import { tool } from "@langchain/core/tools";
-import { z } from "zod";
+/**
+ * File README
+ * What this file does: re-exports the deterministic network trace and log analyzer tools as a unified tool array.
+ * Why it exists: preserves backward compatibility with modules importing extendedTools while keeping tool implementations modular.
+ */
+import { logAnalyzerTool } from './tools/logAnalyzerTool.js';
+import { networkTraceTool } from './tools/networkTraceTool.js';
 
-export const networkTraceTool = tool(
-  async ({ endpoint }) => {
-    return JSON.stringify({
-      endpoint,
-      dnsResolution: "12ms",
-      tcpHandshake: "45ms",
-      ttfb: "850ms",
-      status: "Warning: High TTFB detected. Potential database connection pool bottleneck."
-    });
-  },
-  {
-    name: "network_trace",
-    description: "Simulates a network latency trace against a given API endpoint.",
-    schema: z.object({ endpoint: z.string() })
-  }
-);
-
-export const logAnalyzerTool = tool(
-  async ({ query, timeframe }) => {
-    return JSON.stringify({
-      matches: 42,
-      frequentError: "Connection pool exhausted",
-      timeframe,
-      severity: "CRITICAL"
-    });
-  },
-  {
-    name: "log_analyzer",
-    description: "Simulates searching through structured JSON server logs.",
-    schema: z.object({ query: z.string(), timeframe: z.string() })
-  }
-);
-
+export { logAnalyzerTool, networkTraceTool };
 export const extendedTools = [networkTraceTool, logAnalyzerTool];
