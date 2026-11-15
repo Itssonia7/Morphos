@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from 'node:http';
 import admin from 'firebase-admin';
 import { Server, type Socket } from 'socket.io';
+import { getInvestigationById } from './firebase.js';
 
 export type GraphStageStatus =
   | 'starting'
@@ -30,11 +31,49 @@ export interface GraphUpdateEvent {
   timestamp: number;
 }
 
+export interface SubscribeRunAck {
+  ok: boolean;
+  error?: string;
+}
+
 interface AuthenticatedSocketData {
   uid: string;
 }
 
 let io: Server | null = null;
+const runOwners = new Map<string, string>();
+
+export const registerRunOwner = (runId: string, userId: string): void => {
+  const cleanRunId = runId.trim();
+  const cleanUserId = userId.trim();
+  if (cleanRunId && cleanUserId) {
+    runOwners.set(cleanRunId, cleanUserId);
+  }
+};
+
+async function isRunOwnedByUser(runId: string, uid: string): Promise<boolean> {
+  const knownOwner = runOwners.get(runId);
+  if (knownOwner) {
+    return knownOwner === uid;
+  }
+
+  try {
+    const record = await getInvestigationById(runId);
+    const ownerUid =
+      record && typeof (record as Record<string, unknown>).userId === 'string'
+        ? String((record as Record<string, unknown>).userId)
+        : null;
+
+    if (ownerUid) {
+      runOwners.set(runId, ownerUid);
+      return ownerUid === uid;
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
 
 function extractSocketToken(socket: Socket): string | null {
   const authToken = socket.handshake.auth?.token;
@@ -89,11 +128,29 @@ export const initSocket = (server: HttpServer, frontendOrigin: string): Server =
     const { uid } = socket.data as AuthenticatedSocketData;
     socket.join(`user:${uid}`);
 
-    socket.on('subscribe_run', (runId: unknown) => {
-      if (typeof runId === 'string' && runId.trim().length > 0) {
-        socket.join(`run:${runId.trim()}`);
-      }
-    });
+    socket.on(
+      'subscribe_run',
+      async (runId: unknown, ack?: (response: SubscribeRunAck) => void) => {
+        if (typeof runId !== 'string' || runId.trim().length === 0) {
+          ack?.({ ok: false, error: 'Invalid runId.' });
+          return;
+        }
+
+        const cleanRunId = runId.trim();
+        const authorized = await isRunOwnedByUser(cleanRunId, uid);
+        if (!authorized) {
+          socket.emit('subscription_error', {
+            runId: cleanRunId,
+            error: 'Access denied.',
+          });
+          ack?.({ ok: false, error: 'Access denied.' });
+          return;
+        }
+
+        await socket.join(`run:${cleanRunId}`);
+        ack?.({ ok: true });
+      },
+    );
 
     socket.on('unsubscribe_run', (runId: unknown) => {
       if (typeof runId === 'string' && runId.trim().length > 0) {
@@ -106,6 +163,7 @@ export const initSocket = (server: HttpServer, frontendOrigin: string): Server =
 };
 
 export const closeSocket = async (): Promise<void> => {
+  runOwners.clear();
   if (io) {
     await io.close();
     io = null;
@@ -119,6 +177,10 @@ export const emitGraphState = (
   data: GraphStatePayload,
   userId?: string,
 ): void => {
+  if (userId) {
+    registerRunOwner(runId, userId);
+  }
+
   if (!io) return;
 
   const rooms: string[] = [`run:${runId}`];

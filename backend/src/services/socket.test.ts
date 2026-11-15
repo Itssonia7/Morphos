@@ -2,7 +2,14 @@ import { createServer, type Server as HttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { io as createClient, type Socket as ClientSocket } from 'socket.io-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { closeSocket, emitGraphState, initSocket, type GraphUpdateEvent } from './socket.js';
+import {
+  closeSocket,
+  emitGraphState,
+  initSocket,
+  registerRunOwner,
+  type GraphUpdateEvent,
+  type SubscribeRunAck,
+} from './socket.js';
 
 vi.mock('firebase-admin', () => ({
   default: {
@@ -13,6 +20,15 @@ vi.mock('firebase-admin', () => ({
         throw new Error('Invalid token');
       },
     }),
+  },
+}));
+
+vi.mock('./firebase.js', () => ({
+  getInvestigationById: async (id: string) => {
+    if (id === 'persisted-run-a') {
+      return { id, userId: 'user-a' };
+    }
+    return null;
   },
 }));
 
@@ -89,5 +105,76 @@ describe('WebSocket Telemetry Service', () => {
     expect(event.runId).toBe('run-123');
     expect(event.state).toBe('generateHypotheses');
     expect(receivedByB).toHaveLength(0);
+  });
+
+  it('blocks cross-user subscribe_run requests for unauthorized or unknown runIds', async () => {
+    registerRunOwner('run-owned-by-a', 'user-a');
+
+    const clientB = createClient(baseUrl, {
+      auth: { token: 'valid-user-b' },
+      reconnection: false,
+    });
+    clients.push(clientB);
+
+    await new Promise<void>((resolve) => clientB.on('connect', resolve));
+
+    const ackOtherUser = await new Promise<SubscribeRunAck>((resolve) => {
+      clientB.emit('subscribe_run', 'run-owned-by-a', resolve);
+    });
+    expect(ackOtherUser).toEqual({ ok: false, error: 'Access denied.' });
+
+    const ackUnknown = await new Promise<SubscribeRunAck>((resolve) => {
+      clientB.emit('subscribe_run', 'run-does-not-exist', resolve);
+    });
+    expect(ackUnknown).toEqual({ ok: false, error: 'Access denied.' });
+
+    const receivedByB: GraphUpdateEvent[] = [];
+    clientB.on('graph_update', (evt: GraphUpdateEvent) => receivedByB.push(evt));
+
+    emitGraphState('run-owned-by-a', 'finalize', {
+      runId: 'run-owned-by-a',
+      stage: 'finalize',
+      status: 'completed',
+      timestamp: new Date().toISOString(),
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(receivedByB).toHaveLength(0);
+  });
+
+  it('delivers a single graph_update event when a client is in both user: and run: rooms', async () => {
+    const clientA = createClient(baseUrl, {
+      auth: { token: 'valid-user-a' },
+      reconnection: false,
+    });
+    clients.push(clientA);
+
+    await new Promise<void>((resolve) => clientA.on('connect', resolve));
+
+    // Subscribe to a run owned by user-a (verified via persisted Firebase record fallback)
+    const ack = await new Promise<SubscribeRunAck>((resolve) => {
+      clientA.emit('subscribe_run', 'persisted-run-a', resolve);
+    });
+    expect(ack).toEqual({ ok: true });
+
+    const receivedByA: GraphUpdateEvent[] = [];
+    clientA.on('graph_update', (evt: GraphUpdateEvent) => receivedByA.push(evt));
+
+    emitGraphState(
+      'persisted-run-a',
+      'executeExperiment',
+      {
+        runId: 'persisted-run-a',
+        stage: 'executeExperiment',
+        status: 'experiment_executed',
+        timestamp: new Date().toISOString(),
+      },
+      'user-a',
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    expect(receivedByA).toHaveLength(1);
+    expect(receivedByA[0].runId).toBe('persisted-run-a');
+    expect(receivedByA[0].state).toBe('executeExperiment');
   });
 });

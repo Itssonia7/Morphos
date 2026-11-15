@@ -1,4 +1,3 @@
-import { subscribeToGraphUpdates } from './services/socket';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -401,7 +400,6 @@ export default function App() {
 
     // If user is authenticated, call the real backend POST /api/investigate
     if (token) {
-      const unsubscribeTelemetry = subscribeToGraphUpdates(token, () => {});
       try {
         const result = await investigate(trimmed, token);
         const finalRecord: InvestigationRecord = {
@@ -431,7 +429,6 @@ export default function App() {
         // Fallback to local domain engine if backend is offline or quota exceeded
         handleLocalInvestigationRun(trimmed);
       } finally {
-        unsubscribeTelemetry();
         setLoading(false);
       }
     } else {
